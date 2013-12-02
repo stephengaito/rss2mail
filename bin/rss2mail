@@ -42,6 +42,7 @@ options = {
   :reload  => false,
   :verbose => false,
   :debug   => false
+  :feed_klass => RSS2Mail::Feed;
 }
 
 OptionParser.new { |opts|
@@ -65,6 +66,16 @@ OptionParser.new { |opts|
 
   opts.on('-D', '--debug', "Print debug output and don't send any mails") {
     options[:debug] = true
+  }
+
+  opts.on('-s', '--smtp', 'Send mail using a local SMTP server') {
+    require 'rss2mail/feed_smtp'
+    options[:feed_klass] = RSS2Mail::FeedSMTP
+  }
+
+  opts.on('-l', '--lmtp', 'Send mail using a local LMTP server') {
+    require 'rss2mail/feed_lmtp'
+    options[:feed_klass] = RSS2Mail::FeedLMTP
   }
 
   opts.on('-h', '--help', 'Print this help message and exit') {
@@ -96,6 +107,8 @@ else
   [File.join(base, 'feeds.yaml')]
 end
 
+feed_klass = options.delete(:feed_klass) || RSS2Mail::Feed
+
 feeds_files.each { |feeds_file|
   feeds = begin
     YAML.load_file(feeds_file)
@@ -110,7 +123,7 @@ feeds_files.each { |feeds_file|
   end
 
   target_feeds.each { |feed|
-    RSS2Mail::Feed.new(feed, options).deliver(templates) unless feed[:skip]
+    feed_klass.new(feed, options).deliver(templates) unless feed[:skip]
   }
 
   # write updated feed information
