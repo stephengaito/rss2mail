@@ -38,9 +38,9 @@ module RSS2Mail
 
     MAIL = "not used"
 
-    def build_message(type_header, title, subject, to)
+    def build_message(type_header, to, title, subject, body)
       msgstr = <<END_OF_MESSAGE
-From: #{FROM}
+From: rss2mail@#{HOST}
 To: #{to.join(', ')}
 Subject: [#{title}] #{subject}
 Date: #{DateTime.now.strftime("%a, %d %b %Y %H:%M:%S %z")}
@@ -56,8 +56,8 @@ END_OF_MESSAGE
       return if debug
 
       Net::SMTP.start('localhost', 25) { |smtp|
-        smtp.send_message(build_message(type_header, title, subject, *to), 
-                          FROM, *to)
+        smtp.send_message(build_message(type_header, *to, title, subject, body), 
+                          "rss2mail@#{HOST}", *to)
       }
 
       yield if block_given?

@@ -41,8 +41,8 @@ options = {
   :files   => nil,
   :reload  => false,
   :verbose => false,
-  :debug   => false
-  :feed_klass => RSS2Mail::Feed;
+  :debug   => false,
+  :feed_klass => RSS2Mail::Feed
 }
 
 OptionParser.new { |opts|

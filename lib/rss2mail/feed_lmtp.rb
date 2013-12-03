@@ -52,15 +52,15 @@ end
 
 module RSS2Mail
 
-  class FeedLMTP < Feed
+  class FeedLMTP < FeedSMTP
 
     def send_mail(type_header, to, title, subject, body)
       return if debug
 
       to.each { | aRecipient |
         Net::LMTP.start('localhost', 24) { |lmtp|
-          lmtp.send_message(build_message(type_header, title, subject, [aRecipient]), 
-                            FROM, aRecipient)
+          lmtp.send_message(build_message(type_header, [aRecipient], title, subject, body), 
+                            "rss2mail@#{HOST}", aRecipient)
         }
       }
 
