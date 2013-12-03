@@ -44,3 +44,21 @@ Change the location of your feeds directory to suit your needs.  The
 target you give rss2mail ("hourly") must be in one or more of your feed 
 descriptions contaided in your feeds directory.
 
+## Local installation
+
+Ensure you have [Hen]() installed:
+
+>  gem install hen
+
+Then in the root of the rss2mail source type:
+
+>  rake gem
+
+This will create a pkg directory containing rss2mail-x.x.x.gem
+
+Move this file to the server on which you want to use rss2mail and then 
+type:
+
+>  gem install rss2mail-x.x.x.gem
+
+
