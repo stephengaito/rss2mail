@@ -30,11 +30,11 @@ module RSS2Mail
 
   module SentLists
 
-    def sentListFileName(feeds_file)
+    def self.sentListFileName(feeds_file)
       feeds_file.sub(/\.[Yy][Aa][Mm][Ll]$/,'.sentListYaml')
     end
 
-    def mergeSentListInto(feeds, feeds_file)
+    def self.mergeSentListInto(feeds, feeds_file, verbose = false)
       sentList = YAML.load_file(sentListFileName(feeds_file))
       
       feeds.each_pair { | feedName, feedDetails | 
@@ -51,7 +51,8 @@ module RSS2Mail
       feeds
     end
 
-    def demergeSentListFrom(feeds, feeds_file)
+    def self.demergeSentListFrom(feeds, feeds_file, verbose = false)
+      puts "demerging sent lists from #{feeds_file}" if verbose
       sentList = Hash.new()
 
       feeds.each_pair { | feedName, feedDetails |
@@ -60,12 +61,18 @@ module RSS2Mail
           next unless aFeed.has_key?(:sent)
           next unless aFeed.has_key?(:url)
           url = aFeed[:url].to_sym
-          feedSentLists[url] = aFeed.delete(:sent)
+          feedSentList = aFeed.delete(:sent)
+          if aFeed.has_key?(:sentListLimit) then
+            limit = aFeed[:sentListLimit].to_i
+            puts "Limiting sentList to [#{limit}] for #{url}" if verbose
+            feedSentList = feedSentList.slice(-limit, limit) 
+          end
+          feedSentLists[url] = feedSentList
         }
       }
 
       File.open(sentListFileName(feeds_file), 'w') { |f| 
-        f.write(YAML.dump(sentList)
+        f.write(YAML.dump(sentList))
       }
 
       feeds

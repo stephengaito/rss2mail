@@ -31,6 +31,7 @@ require 'optparse'
 require 'nuggets/env/user_home'
 
 require 'rss2mail'
+require 'rss2mail/sent_links'
 
 base = File.expand_path('../..', __FILE__)
 
@@ -56,12 +57,8 @@ OptionParser.new { |opts|
     options[:files] = Dir[File.join(d, '*.yaml')]
   }
 
-  opts.on('-m', '--merged', "Keep the sent lists in a feeds file") {
-    options[:separateSentLists] = true
-  }
-
   opts.on('-S', '--separate', "Keep the sent lists in a separate file") {
-    options[:separateSentLists] = false
+    options[:separateSentLists] = true
   }
 
   opts.on('-r', '--reload', 'Reload feeds') {
@@ -128,7 +125,7 @@ feeds_files.each { |feeds_file|
     RSS2Mail::Feed.new(feed, options).deliver(templates) unless feed[:skip]
   }
 
-  RSS2Mail::SentLists.demergeSentListFrom(feeds, feeds_file) if options[:separateSentLists]
+  RSS2Mail::SentLists.demergeSentListFrom(feeds, feeds_file, options[:verbose]) if options[:separateSentLists]
 
   # write updated feed information
   File.open(feeds_file, 'w') { |file| YAML.dump(feeds, file) } unless options[:debug]
