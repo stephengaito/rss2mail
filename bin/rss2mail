@@ -31,6 +31,7 @@ require 'optparse'
 require 'nuggets/env/user_home'
 
 require 'rss2mail'
+require 'rss2mail/sent_links'
 
 base = File.expand_path('../..', __FILE__)
 
@@ -42,6 +43,7 @@ options = {
   :reload  => false,
   :verbose => false,
   :debug   => false,
+  :separateSentLists => false,
   :feed_klass => RSS2Mail::Feed
 }
 
@@ -54,6 +56,10 @@ OptionParser.new { |opts|
     abort "Can't read directory: #{d}" unless File.readable?(d)
 
     options[:files] = Dir[File.join(d, '*.yaml')]
+  }
+
+  opts.on('-S', '--separate', "Keep the sent lists in a separate file") {
+    options[:separateSentLists] = true
   }
 
   opts.on('-r', '--reload', 'Reload feeds') {
@@ -117,6 +123,12 @@ feeds_files.each { |feeds_file|
     next
   end
 
+  begin
+    RSS2Mail::SentLists.mergeSentListInto(feeds, feeds_file);
+  rescue Errno::ENOENT
+    warn "No sent lists associated with the #{feeds_file} feeds file." if options[:separateSentLists]
+  end
+
   unless target_feeds = feeds[target]
     warn "Feeds target not found: #{target} (in #{feeds_file})"
     next
@@ -125,6 +137,8 @@ feeds_files.each { |feeds_file|
   target_feeds.each { |feed|
     feed_klass.new(feed, options).deliver(templates) unless feed[:skip]
   }
+
+  RSS2Mail::SentLists.demergeSentListFrom(feeds, feeds_file, options[:verbose]) if options[:separateSentLists]
 
   # write updated feed information
   File.open(feeds_file, 'w') { |file| YAML.dump(feeds, file) } unless options[:debug]
