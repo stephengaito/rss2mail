@@ -65,7 +65,7 @@ module RSS2Mail
           if aFeed.has_key?(:sentListLimit) then
             limit = aFeed[:sentListLimit].to_i
             puts "Limiting sentList to [#{limit}] for #{url}" if verbose
-            feedSentList = feedSentList.slice(-limit, limit) 
+            feedSentList = feedSentList.slice(-limit, limit)  if limit < feedSentList.size
           end
           feedSentLists[url] = feedSentList
         }
