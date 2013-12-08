@@ -61,7 +61,7 @@ module RSS2Mail
           next unless aFeed.has_key?(:sent)
           next unless aFeed.has_key?(:url)
           url = aFeed[:url].to_sym
-          feedSentList = aFeed.delete(:sent)
+          feedSentList = aFeed.delete(:sent) || []
           if aFeed.has_key?(:sentListLimit) then
             limit = aFeed[:sentListLimit].to_i
             puts "Limiting sentList to [#{limit}] for #{url}" if verbose
@@ -72,7 +72,7 @@ module RSS2Mail
       }
 
       File.open(sentListFileName(feeds_file), 'w') { |f| 
-        f.write(YAML.dump(sentList))
+        YAML.dump(sentList,f)
       }
 
       feeds
